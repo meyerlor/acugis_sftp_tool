@@ -2,9 +2,11 @@
 AcuGIS QGIS Plugin for SFTP
 Add multiple servers and upload via SFTP
 
-![SFTP Plugin](docs/servers.png)
+![SFTP Upload QGIS](docs/Upload.png)
 
-![SFTP Upload QGIS](docs/upload.png)
+![SFTP Plugin](docs/ConfigServers.png)
 
-![SFTP Plugin for QGIS](docs/main.png)
+![SFTP Plugin for QGIS](docs/Menu.png)
+
+
 
