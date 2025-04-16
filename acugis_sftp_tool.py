@@ -1,9 +1,9 @@
 import os
 import json
 import paramiko
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMessageBox, QInputDialog, QProgressDialog, QLineEdit, QComboBox, QDialog, QVBoxLayout, QLabel, QFormLayout, QPushButton, QHBoxLayout
+from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMessageBox, QInputDialog, QProgressBar, QLineEdit, QComboBox, QDialog, QVBoxLayout, QLabel, QFormLayout, QPushButton, QHBoxLayout
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QTimer, QCoreApplication, QEventLoop
 from qgis.core import QgsProject
 from qgis.utils import iface
 
@@ -87,10 +87,17 @@ class AcugisSFTPTool:
 
                 self.layout.addLayout(self.form_layout)
 
+                self.status_label = QLabel()
+                self.status_label.setStyleSheet("color: green;")
+                from qgis.PyQt.QtCore import QTimer
+                self.layout.addWidget(self.status_label)
+
                 self.button_layout = QHBoxLayout()
                 self.save_button = QPushButton("Save")
                 self.delete_button = QPushButton("Delete")
+                self.add_button = QPushButton("Add New")
                 self.test_button = QPushButton("Test Connection")
+                self.button_layout.addWidget(self.add_button)
                 self.button_layout.addWidget(self.save_button)
                 self.button_layout.addWidget(self.delete_button)
                 self.button_layout.addWidget(self.test_button)
@@ -101,6 +108,7 @@ class AcugisSFTPTool:
                 self.list_widget.currentItemChanged.connect(self.load_selected)
                 self.save_button.clicked.connect(self.save_entry)
                 self.delete_button.clicked.connect(self.delete_entry)
+                self.add_button.clicked.connect(self.clear_form)
                 self.test_button.clicked.connect(self.test_connection)
 
             def load_selected(self):
@@ -115,7 +123,9 @@ class AcugisSFTPTool:
             def save_entry(self):
                 name = self.server_name.text().strip()
                 if not name:
-                    QMessageBox.warning(self, "Error", "Server name is required.")
+                    self.status_label.setStyleSheet("color: red;")
+                    self.status_label.setText("✖ Server name is required.")
+                    QTimer.singleShot(4000, lambda: self.status_label.clear())
                     return
                 self.config[name] = {
                     'host': self.host.text().strip(),
@@ -125,7 +135,9 @@ class AcugisSFTPTool:
                 }
                 if name not in [self.list_widget.item(i).text() for i in range(self.list_widget.count())]:
                     self.list_widget.addItem(name)
-                QMessageBox.information(self, "Saved", f"Server '{name}' saved.")
+                self.status_label.setStyleSheet("color: green;")
+                self.status_label.setText(f"✔ Server '{name}' saved.")
+                QTimer.singleShot(4000, lambda: self.status_label.clear())
 
             def delete_entry(self):
                 name = self.server_name.text().strip()
@@ -142,10 +154,19 @@ class AcugisSFTPTool:
                     self.username.clear()
                     self.password.clear()
                     self.port.clear()
-                    self.accept()  # Ensure dialog returns accepted state so config is saved
-                    QMessageBox.information(self, "Deleted", f"Server '{name}' deleted.")
+                    self.status_label.setStyleSheet("color: green;")
+                    self.status_label.setText(f"✔ Server '{name}' deleted.")
+                    QTimer.singleShot(4000, lambda: self.status_label.clear())
+
+            def clear_form(self):
+                self.server_name.clear()
+                self.host.clear()
+                self.username.clear()
+                self.password.clear()
+                self.port.clear()
 
             def test_connection(self):
+                self.status_label.clear()
                 host = self.host.text().strip()
                 username = self.username.text().strip()
                 password = self.password.text().strip()
@@ -155,15 +176,22 @@ class AcugisSFTPTool:
                     transport.connect(username=username, password=password)
                     sftp = paramiko.SFTPClient.from_transport(transport)
                     sftp.close()
+                    pause_btn.setEnabled(False)
+                    resume_btn.setEnabled(False)
+                    stop_btn.setEnabled(False)
                     transport.close()
-                    QMessageBox.information(self, "Success", "Connection successful!")
+                    self.status_label.setStyleSheet("color: green;")
+                    self.status_label.setText("✔ Connection successful!")
+                    QTimer.singleShot(4000, lambda: self.status_label.clear())
                 except Exception as e:
-                    QMessageBox.critical(self, "Connection Failed", f"Could not connect: {str(e)}")
+                    self.status_label.setStyleSheet("color: red;")
+                    self.status_label.setText(f"✖ Connection failed: {str(e)}")
+                    QTimer.singleShot(5000, lambda: self.status_label.clear())
 
         config = self.load_config()
         dlg = ConfigDialog(config)
-        if dlg.exec_():
-            self.save_config(config)
+        dlg.exec_()
+        self.save_config(config)
 
     from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel
 
@@ -195,9 +223,12 @@ class AcugisSFTPTool:
         server_names = list(config.keys())
         server_dropdown.addItems(server_names)
         remote_path_input = QLineEdit()
+        ownership_input = QLineEdit()
+        ownership_input.setText("www-data:www-data")
 
         form_layout.addRow("Select Server:", server_dropdown)
         form_layout.addRow("Remote Path:", remote_path_input)
+        form_layout.addRow("Ownership (user:group):", ownership_input)
         layout.addLayout(form_layout)
 
         test_button = QPushButton("Test Connection")
@@ -205,8 +236,17 @@ class AcugisSFTPTool:
 
         button_box = QHBoxLayout()
         upload_btn = QPushButton("Upload")
+        pause_btn = QPushButton("Pause")
+        resume_btn = QPushButton("Resume")
+        stop_btn = QPushButton("Stop")
         cancel_btn = QPushButton("Cancel")
+        pause_btn.setEnabled(False)
+        resume_btn.setEnabled(False)
+        stop_btn.setEnabled(False)
         button_box.addWidget(upload_btn)
+        button_box.addWidget(pause_btn)
+        button_box.addWidget(resume_btn)
+        button_box.addWidget(stop_btn)
         button_box.addWidget(cancel_btn)
         layout.addLayout(button_box)
 
@@ -231,133 +271,156 @@ class AcugisSFTPTool:
         test_button.clicked.connect(test_connection)
 
         def start_upload():
-            upload_dialog.accept()
+            server_name = server_dropdown.currentText()
+            remote_base_path = remote_path_input.text().strip()
+            ownership_value = ownership_input.text().strip() or "www-data:www-data"
+
+            if not server_name or not remote_base_path:
+                self.upload_status_label.setStyleSheet("color: red;")
+                self.upload_status_label.setText("✖ Please select a server and enter a remote path.")
+                QTimer.singleShot(4000, lambda: self.upload_status_label.clear())
+                return
+
+            upload_btn.setEnabled(False)
+            pause_btn.setEnabled(True)
+            resume_btn.setEnabled(True)
+            stop_btn.setEnabled(True)
+            cancel_btn.setEnabled(False)
+
+            server_info = config[server_name]
+            project = QgsProject.instance()
+            project_path = project.fileName()
+            if not project_path:
+                QMessageBox.warning(None, "No Project", "Please save the QGIS project first.")
+                return
+
+            project_dir = os.path.dirname(project_path)
+
+            try:
+                transport = paramiko.Transport((server_info['host'], server_info['port']))
+                transport.connect(username=server_info['username'], password=server_info['password'])
+                sftp = paramiko.SFTPClient.from_transport(transport)
+
+                ssh = paramiko.SSHClient()
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(server_info['host'], port=server_info['port'], username=server_info['username'], password=server_info['password'])
+
+                file_list = []
+                for root, _, files in os.walk(project_dir):
+                    for file in files:
+                        local_path = os.path.join(root, file)
+                        relative_path = os.path.relpath(local_path, project_dir)
+                        remote_path = os.path.join(remote_base_path, relative_path).replace('\\', '/')
+                        file_list.append((local_path, remote_path))
+
+                self.upload_status_label = QLabel()
+                self.upload_status_label.setStyleSheet("color: green;")
+                layout.addWidget(self.upload_status_label)
+
+                progress_bar = QProgressBar()
+                progress_bar.setMaximum(len(file_list))
+                progress_bar.setValue(0)
+                layout.addWidget(progress_bar)
+
+                yes_to_all = False
+                upload_logs = []
+                paused = False
+                stopped = False
+
+                def pause_upload():
+                    nonlocal paused
+                    paused = True
+
+                def resume_upload():
+                    nonlocal paused
+                    paused = False
+
+                def stop_upload():
+                    nonlocal stopped
+                    stopped = True
+
+                pause_btn.clicked.connect(pause_upload)
+                resume_btn.clicked.connect(resume_upload)
+                stop_btn.clicked.connect(stop_upload)
+                for i, (local_path, remote_path) in enumerate(file_list):
+                    if stopped:
+                        break
+                    while paused:
+                        QCoreApplication.processEvents(QEventLoop.AllEvents, 100)
+                    progress_bar.setValue(i + 1)
+                    self.upload_status_label.setText(f"Uploading ({i + 1}/{len(file_list)}): {os.path.basename(local_path)}")
+
+                    try:
+                        skip_file = False
+                        try:
+                            remote_attr = sftp.stat(remote_path)
+                            local_mtime = os.path.getmtime(local_path)
+                            if int(local_mtime) <= int(remote_attr.st_mtime):
+                                skip_file = True
+                        except IOError:
+                            pass
+
+                        if skip_file and not yes_to_all:
+                            overwrite = QMessageBox.question(upload_dialog, "File Exists", f"{os.path.basename(local_path)} already exists on the server. Overwrite?", QMessageBox.Yes | QMessageBox.No | QMessageBox.YesToAll)
+                            if overwrite == QMessageBox.No:
+                                continue
+                            elif overwrite == QMessageBox.YesToAll:
+                                yes_to_all = True
+
+                        remote_dir = os.path.dirname(remote_path)
+                        dirs = remote_dir.strip('/').split('/')
+                        path_so_far = ''
+                        for dir in dirs:
+                            path_so_far = f"{path_so_far}/{dir}" if path_so_far else f"/{dir}"
+                            try:
+                                sftp.listdir(path_so_far)
+                            except IOError:
+                                sftp.mkdir(path_so_far)
+                                ssh.exec_command(f"sudo chown {ownership_value} '{path_so_far}'")
+
+                        sftp.put(local_path, remote_path)
+                        upload_logs.append(f"Uploaded: {local_path} → {remote_path}")
+                        ssh.exec_command(f"sudo chown {ownership_value} '{remote_path}'")
+
+                    except Exception as upload_error:
+                        log_message = f"Failed to upload {local_path}: {upload_error}"
+                        upload_logs.append(log_message)
+                        print(log_message)
+
+                progress_bar.setValue(len(file_list))
+                sftp.close()
+                ssh.close()
+                transport.close()
+
+                self.upload_status_label.setText("✔ Upload complete. Click below to view the log.")
+                QTimer.singleShot(5000, lambda: self.upload_status_label.clear())
+
+                log_dialog = QDialog()
+                log_dialog.setWindowTitle("Upload Log")
+                log_layout = QVBoxLayout()
+                log_label = QLabel("<b>Upload Log:</b>")
+                log_layout.addWidget(log_label)
+
+                from qgis.PyQt.QtWidgets import QTextEdit
+                log_output = QTextEdit()
+                log_output.setReadOnly(True)
+                log_output.setText("".join(upload_logs))
+                log_layout.addWidget(log_output)
+
+                close_button = QPushButton("Close")
+                close_button.clicked.connect(log_dialog.accept)
+                log_layout.addWidget(close_button)
+
+                log_dialog.setLayout(log_layout)
+                log_dialog.exec_()
+
+            except Exception as e:
+                QMessageBox.critical(None, "Upload Failed", f"An error occurred: {str(e)}")
 
         upload_btn.clicked.connect(start_upload)
         cancel_btn.clicked.connect(upload_dialog.reject)
 
-        if not upload_dialog.exec_():
-            return
-
-        server_name = server_dropdown.currentText()
-        remote_base_path = remote_path_input.text().strip()
-
-        if not server_name or not remote_base_path:
-            QMessageBox.warning(None, "Missing Info", "Please select a server and enter a remote path.")
-            return
-
-        server_info = config[server_name]
-
-        project = QgsProject.instance()
-        project_path = project.fileName()
-        if not project_path:
-            QMessageBox.warning(None, "No Project", "Please save the QGIS project first.")
-            return
-
-        project_dir = os.path.dirname(project_path)
-
-        try:
-            transport = paramiko.Transport((server_info['host'], server_info['port']))
-            transport.connect(username=server_info['username'], password=server_info['password'])
-            sftp = paramiko.SFTPClient.from_transport(transport)
-
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(server_info['host'], port=server_info['port'], username=server_info['username'], password=server_info['password'])
-
-            file_list = []
-            for root, _, files in os.walk(project_dir):
-                for file in files:
-                    local_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(local_path, project_dir)
-                    remote_path = os.path.join(remote_base_path, relative_path).replace('\\', '/')
-                    file_list.append((local_path, remote_path))
-
-            progress = QProgressDialog("Uploading files...", "Cancel", 0, len(file_list))
-            progress.setMinimumDuration(0)
-            progress.setAutoClose(False)
-            progress.setAutoReset(True)
-            progress.setWindowModality(Qt.WindowModal)
-            progress.setValue(0)
-            progress.setWindowTitle("SFTP Upload Progress")
-            progress.setWindowModality(True)
-
-            yes_to_all = False
-            for i, (local_path, remote_path) in enumerate(file_list):
-                if progress.wasCanceled():
-                    break
-
-                progress.setValue(i)
-                progress.setLabelText(f"Uploading ({i + 1}/{len(file_list)}): {os.path.basename(local_path)}")
-                progress.setLabelText(f"Uploading: {os.path.basename(local_path)}")
-
-                upload_logs = []
-
-                try:
-                    skip_file = False
-                    try:
-                        remote_attr = sftp.stat(remote_path)
-                        local_mtime = os.path.getmtime(local_path)
-                        if int(local_mtime) <= int(remote_attr.st_mtime):
-                            skip_file = True
-                    except IOError:
-                        pass
-
-                    if skip_file and not yes_to_all:
-                        overwrite = QMessageBox.question(None, "File Exists", f"{os.path.basename(local_path)} already exists on the server. Overwrite?", QMessageBox.Yes | QMessageBox.No | QMessageBox.YesToAll)
-                        if overwrite == QMessageBox.No:
-                            continue
-                        elif overwrite == QMessageBox.YesToAll:
-                            yes_to_all = True
-
-                    remote_dir = os.path.dirname(remote_path)
-                    dirs = remote_dir.strip('/').split('/')
-                    path_so_far = ''
-                    for dir in dirs:
-                        path_so_far = f"{path_so_far}/{dir}" if path_so_far else f"/{dir}"
-                        try:
-                            sftp.listdir(path_so_far)
-                        except IOError:
-                            sftp.mkdir(path_so_far)
-
-                    sftp.put(local_path, remote_path)
-                    upload_logs.append(f"Uploaded: {local_path} → {remote_path}")
-                    ssh.exec_command(f"sudo chown www-data:www-data '{remote_path}'")
-
-                except Exception as upload_error:
-                    log_message = f"Failed to upload {local_path}: {upload_error}"
-                    upload_logs.append(log_message)
-                    print(log_message)
-
-            progress.setValue(len(file_list))
-            sftp.close()
-            ssh.close()
-            transport.close()
-
-            QMessageBox.information(None, "Upload Complete", "Project directory uploaded successfully via SFTP. Click OK to view the upload log.")
-
-            # Show log dialog
-            log_dialog = QDialog()
-            log_dialog.setWindowTitle("Upload Log")
-            log_layout = QVBoxLayout()
-            log_label = QLabel("<b>Upload Log:</b>")
-            log_layout.addWidget(log_label)
-
-            from qgis.PyQt.QtWidgets import QTextEdit
-            log_output = QTextEdit()
-            log_output.setReadOnly(True)
-            log_output.setText("\n".join(upload_logs))
-            log_layout.addWidget(log_output)
-
-            close_button = QPushButton("Close")
-            close_button.clicked.connect(log_dialog.accept)
-            log_layout.addWidget(close_button)
-
-            log_dialog.setLayout(log_layout)
-            log_dialog.exec_()
-
-        except Exception as e:
-            QMessageBox.critical(None, "Upload Failed", f"An error occurred: {str(e)}")
+        upload_dialog.exec_()
 
 def classFactory(iface):
     return AcugisSFTPTool(iface)
