@@ -23,11 +23,22 @@ Download contents of acugis_sftp_tool and save as acugis_sftp_tool.zip
 
 Install plugin via QGIS Plugin Manager.
 
+## Configure Servers:
+
 
 ![SFTP Plugin](docs/ConfigServers.png)
 
+## Toolbar Icons:
+
+![SFTP Plugin for QGIS](docs/PluginToolbar.fw.png)
+
+
+## Plugin Menu:
 
 ![SFTP Plugin for QGIS](docs/Menu.png)
+
+
+
 
 
 
