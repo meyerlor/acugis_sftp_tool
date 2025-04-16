@@ -1,0 +1,17 @@
+[general]
+name=AcuGIS SFTP Plugin
+about=QGIS plugin for publishing via SFTP.  
+category=Web
+tags=project, qgis-web-client
+main=acugis_sftp_tool.py
+description=Upload QGIS projects and data via SFTP.
+version=1.2.1
+qgisMinimumVersion=3.0
+icon=icon.png
+author=AcuGIS
+email=hello@acugis.com
+homepage=https://www.acugis.com/sftp-plugin
+repository=https://github.com/AcuGIS/acugis_sftp_tool
+
+
+
