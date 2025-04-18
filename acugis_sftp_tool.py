@@ -60,7 +60,7 @@ class AcugisSFTPTool:
                 logo_path = os.path.join(os.path.dirname(__file__), 'logo.png')
                 if os.path.exists(logo_path):
                     logo_label.setPixmap(QIcon(logo_path).pixmap(120, 40))
-                branding_label = QLabel("<b style='font-size:14pt;'>AcuGIS Plugin</b><br><span style='font-size:10pt;'>Secure SFTP Deployment Tool</span>")
+                branding_label = QLabel("<b style='font-size:14pt;'>SFTP Plugin</b><br><span style='font-size:10pt;'>Secure SFTP Deployment Tool</span>")
                 branding_label.setAlignment(Qt.AlignCenter)
 
                 self.layout.addWidget(logo_label)
@@ -196,7 +196,7 @@ class AcugisSFTPTool:
         logo_path = os.path.join(os.path.dirname(__file__), 'logo.png')
         if os.path.exists(logo_path):
             logo_label.setPixmap(QIcon(logo_path).pixmap(120, 40))
-        branding_label = QLabel("<b style='font-size:14pt;'>AcuGIS Plugin</b><br><span style='font-size:10pt;'>Secure SFTP Deployment Tool</span>")
+        branding_label = QLabel("<b style='font-size:14pt;'>SFTP Plugin</b><br><span style='font-size:10pt;'>Secure SFTP Deployment Tool</span>")
         branding_label.setAlignment(Qt.AlignCenter)
 
         layout.addWidget(logo_label)
