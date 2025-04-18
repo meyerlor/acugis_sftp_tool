@@ -76,7 +76,7 @@ A success message will be displayed up completion.
 
 Added File Browser for selecting remote file location
 
-![SFTP Plugin](docs/RemoteBrowser.png)
+![SFTP Plugin](docs/UploadQGISProject.png)
 
 ## Use Cases
 
