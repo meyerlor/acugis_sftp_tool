@@ -30,7 +30,7 @@ Once installed, you should see the Plugins menu.
 
 ## Configure Servers:
 
-![SFTP Plugin](docs/ConfigServers.png)
+![SFTP Plugin](docs/ConfigureSFTPServers.png) 
 
 - Begin by selecting Configure SFTP servers:  
 
@@ -50,7 +50,7 @@ Use the "Browse Remote Path" button to browse the remote directories, or simply 
 
 If your owner is a user:group other than wwww-data, change it in the Owbership field.
 
-![SFTP Plugin](docs/UploadProject.png)
+![SFTP Plugin](docs/UploadQGISProject.png)
 
 .. warning::
     The entire QGIS Project directory will be uploaded.
