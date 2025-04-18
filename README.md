@@ -37,6 +37,12 @@ Install plugin via QGIS Plugin Manager.
 
 ![SFTP Plugin for QGIS](docs/Menu.png)
 
+## Updates:
+
+Added File Browser for selecting remote file location
+
+![SFTP Plugin](docs/RemoteBrowser.png)
+
 
 
 
