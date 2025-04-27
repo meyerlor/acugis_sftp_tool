@@ -49,8 +49,8 @@ html_static_path = ['_static']
 pygments_style = "sphinx"
 
 
-html_logo = "jasper-report-publisher-logo.png"
+# html_logo = "jasper-report-publisher-logo.png"
 html_theme_options = {
-    'logo_only': True,
+    'logo_only': False,
     'display_version': False,
 }
