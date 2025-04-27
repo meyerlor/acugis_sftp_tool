@@ -37,7 +37,7 @@ Select the Server you wish to upload to.
 
 Use the "Browse Remote Path" button to browse the remote directories, or simply enter the remote location (file path) to upload to (e.g. /var/www/html)
 
-If your owner is a user:group other than wwww-data, change it in the Owbership field.
+If your owner is a user:group other than wwww-data, change it in the Ownership field.
 
 .. warning::
     The entire QGIS Project directory will be uploaded.
@@ -58,7 +58,7 @@ The plugin is generic and can be used for SFTP'ing a QGIS Project directory to a
 
 Some specific use cases are:
 
-- Liamap: While it is still neccessary to create a Repository on disk and register it via Lizmap admin, once you have done so the plugin can transfer the project as well as update files as needed.
+- Lizmap: While it is still neccessary to create a Repository on disk and register it via Lizmap admin, once you have done so the plugin can transfer the project as well as update files as needed.
 
 - QWC2: Can be used to upload to /scan directory.  Once uploaded, Configuration Utility must still be run for the project.
 
