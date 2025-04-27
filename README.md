@@ -2,6 +2,8 @@
 
 ![SFTP Upload QGIS](docs/AcuGISSFTPPlugin.png)
 
+[![Documentation Status](https://readthedocs.org/projects/sftp-plugin/badge/?version=latest)](https://sftp-plugin.docs.acugis.com/en/latest/?badge=latest)
+
 AcuGIS QGIS SFTP Plugin is a plugin for tranfering contents of a QGIS Project directory via SFTP.
 
 ## Features
