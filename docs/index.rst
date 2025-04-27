@@ -1,7 +1,7 @@
 SFTP QGIS Plugin
 ==================================================
 
-.. image:: _static/Jasper-Publisher-Main-min.png
+.. image:: UploadQGISProject.png
 
 
 .. include:: ../README.rst
