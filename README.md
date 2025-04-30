@@ -91,9 +91,13 @@ Some specific use cases are:
 
 - QWC2: Can be used to upload to /scan directory.  Once uploaded, Configuration Utility must still be run for the project.
 
+## Troubleshooting
 
+Error:  "ModuleNotFoundError: No module named 'paramiko'" 
 
+Solution:  Go to Program menu and search for "OSGEO".  Launch OSGEO Shell and enter:
 
+pip install paramiko
 
 
 
