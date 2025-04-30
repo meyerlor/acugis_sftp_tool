@@ -16,14 +16,6 @@ experimental=False
 tracker=https://github.com/AcuGIS/acugis_sftp_tool/issues
 deprecated=False
 
-# versioning
-version=v2.2.2
-changelog=
- Version 2.2.2:
- - Attached QProgressBar to main window to indicating upload progress
- - Added callback function to update progress bar in real time and avoid appearance of freezing
- - QApplication.processEvents() method is called during the upload to keep the GUI responsive
-
 
 
 
