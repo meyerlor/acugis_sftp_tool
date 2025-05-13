@@ -99,6 +99,11 @@ Solution:  Go to Program menu and search for "OSGEO".  Launch OSGEO Shell and en
 
 pip install paramiko
 
+## Video  
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/tFX_lHbrcu0/0.jpg)](https://www.youtube.com/watch?v=tFX_lHbrcu0)
+
+
 
 
 
